@@ -48,3 +48,29 @@ mpiexec -n 6 python3 mpi_media_desvio_allreduce.py<br>
 [Crianca 4] Soma local = 503.313458 | Media local = 0.491517<br>
 [Crianca 4] Media da turma = 0.505219 | Desvio padrao = 0.288570<br>
 <br>
+BARRIER<br>
+Aqui vai a versão em Python + mpi4py do seu barrier, explicada de forma academica<br>
+<br>
+Pense que a barreira é um portão no parquinho: ninguém pode passar até todas as crianças chegarem. <br>
+A criança 0 chega atrasada (espera o Enter), as outras ficam esperando no portão. <br>
+Quando todo mundo chega, o portão abre e todas passam juntas.<br>
+<br>
+mpiexec -n 4 python mpi_barreira_criancas.py <br>
+mpiexec -n 8 python3 mpi_barreira_criancas.py <br>
+[Crianca 7] Cheguei na barreira e estou esperando a Crianca 0...<br>
+[Crianca 4] Cheguei na barreira e estou esperando a Crianca 0...<br>
+[Crianca 3] Cheguei na barreira e estou esperando a Crianca 0...<br>
+[Crianca 2] Cheguei na barreira e estou esperando a Crianca 0...<br>
+[Crianca 5] Cheguei na barreira e estou esperando a Crianca 0...<br>
+[Crianca 6] Cheguei na barreira e estou esperando a Crianca 0...<br>
+[Crianca 1] Cheguei na barreira e estou esperando a Crianca 0...<br>
+[Crianca 0] Estou atrasada para a barreira! (segurando o portao)<br>
+Pressione Enter para eu chegar (ou aguarde 3s)... <br>
+[Crianca 0] Passei da barreira! Sou 0 de 8.<br>
+[Crianca 4] Passei da barreira! Sou 4 de 8.<br>
+[Crianca 2] Passei da barreira! Sou 2 de 8.<br>
+[Crianca 6] Passei da barreira! Sou 6 de 8.<br>
+[Crianca 1] Passei da barreira! Sou 1 de 8.<br>
+[Crianca 5] Passei da barreira! Sou 5 de 8.<br>
+[Crianca 3] Passei da barreira! Sou 3 de 8.<br>
+[Crianca 7] Passei da barreira! Sou 7 de 8.<br>
