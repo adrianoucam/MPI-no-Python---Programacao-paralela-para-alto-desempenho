@@ -73,6 +73,8 @@ Hello from rank 3 of 4
 
 Referências úteis
 
+https://github.com/gpsilva2003/MPI
+
 mpi4py — documentação oficial
 
 MPI Standard — comunicadores, coletivas e ponto-a-ponto.
