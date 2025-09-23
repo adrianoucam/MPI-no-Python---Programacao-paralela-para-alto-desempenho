@@ -22,6 +22,21 @@ mpiexec -n 4 python3 mpi_bolinhas.py (mpirun -n 4 python3 mpi_bolinhas.py no lin
 [Rank 1] Recebi 10 bolinha(s). De quem? Rank 0 | Etiqueta: 0<br>
 [Rank 1] As bolinhas sÒo: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]<br>
 <br>
+MPI SEND + MPI GETCOUNT<br>
+Ideia: a Criança 0 escolhe uma quantidade aleatória de bolinhas (números) e envia para a Criança 1. A Criança 1 recebe até um máximo de 100 e usa o status da mensagem para descobrir quantas realmente chegaram, além de quem enviou e qual foi a etiqueta (tag).<br>
+<br>
+mpiexec -n 8 python3 mpi_aleatorio_criancas.py<br>
+[Rank 7] Sem papel nesta brincadeira.<br>
+[Rank 2] Sem papel nesta brincadeira.<br>
+[Rank 4] Sem papel nesta brincadeira.<br>
+[Rank 3] Sem papel nesta brincadeira.<br>
+[Rank 6] Sem papel nesta brincadeira.<br>
+[Rank 5] Sem papel nesta brincadeira.<br>
+[Rank 0] Enviei 58 numero(s) para o Rank 1 (tag=42).<br>
+[Rank 1] Recebi 58 numero(s). Origem = 0, tag = 42.<br>
+[Rank 1] Valores: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, '...']<br>
+<br>
+<BR>
 mpi_gather, explicada de forma academica:<br>
 <br>
 Pense que cada criança (processo) tem um bloquinho com 10 números. Cada criança preenche seu bloquinho com o seu número (o <br>rank). Depois, o Líder (rank 0) junta todos os bloquinhos com um Gather e mostra o resultado.<br>
