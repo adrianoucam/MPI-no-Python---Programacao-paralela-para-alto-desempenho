@@ -1,4 +1,16 @@
+
 <b>Descricao de programas exemplo usando MPI no python</b>
+<br>
+Programa de aproximação de π (pi) usando Allreduce, com explicação para uso academico.<br>
+<br>
+Pense que queremos descobrir o tamanho da pizza (pi). Cada criança (processo) mede um pedacinho e no final somamos tudo. O Allreduce é como juntar todas as medidas em uma só resposta que todos recebem.<br>
+mpiexec -n 4 python mpi_pi_criancas.py<br>
+mpiexec -n 4 python3 mpi_pi_criancas.py<br>
+[Rank 0] valor aproximado de pi: 3.1415926535897936<br>
+[Rank 0] erro absoluto em relacao a math.pi: 4.441e-16<br>
+[Rank 2] valor aproximado de pi: 3.1415926535897936<br>
+[Rank 3] valor aproximado de pi: 3.1415926535897936<br>
+[Rank 1] valor aproximado de pi: 3.1415926535897936<br>
 <br>
 <br>
 Bolinhas distribuidas entre o rank0 e rank1<br>
