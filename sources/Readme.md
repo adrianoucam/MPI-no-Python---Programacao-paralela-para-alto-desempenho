@@ -125,3 +125,19 @@ mpiexec -n 4 python3 mpi_bsend_criancas.py<br>
 [INFO] Buffer de Bsend anexado com 55 bytes.<br>
 [Rank 0] Valor inicial = 0 | Cartao final (maximos) = [12, 12, 12, 12]<br>
 <br>
+<br>
+Usando tipo dtype NumPy equivalente ao struct do C , com MPI BroadCast e Gather para juntar os valores
+Ideia<br>
+<br>
+Imagine que cada “partícula” é uma fichinha com 6 campos:<br>
+<br>
+4 números de ponto flutuante: x, y, z, velocidade<br>
+<br>
+2 números inteiros: n, tipo<br>
+<br>
+O Líder (rank 0) preenche um pacote com 25 fichinhas e, com um broadcast, manda o mesmo pacote para todas as crianças (processos).<br>
+Usamos um tipo MPI derivado para dizer ao MPI exatamente como essa fichinha é organizada na memória.<br>
+o rank 0 cria as fichas e faz broadcast.<br>
+cada rank aplica um deslocamento simples nas suas fichas.<br>
+fazemos um gather de volta no rank 0, que desenha um gráfico (x vs y) com um grupo por processo.<br>
+se você estiver num ambiente sem janela gráfica, será salvo um arquivo particulas.png na pasta atual <br>
