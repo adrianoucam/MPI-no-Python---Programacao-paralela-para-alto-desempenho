@@ -29,6 +29,40 @@ usando o Allgather (tipo “todo mundo conta sua média para todo mundo”).<br>
 No fim, cada uma consegue calcular a média da turma.<br>
 <br>
 <br>
+MPI Com funçoes, para identificar versões e validar tempo<br>
+<br>
+pense no programa como um “cartão de identidade do time MPI” — cada jogadora (processo) diz quem é (rank), quantas jogadoras existem (size), em qual “computador-quadra” está jogando e qual é a versão do uniforme (versão do MPI).<br>
+<br>
+Também medimos quanto tempo a checagem levou e qual é a precisão do relógio do juiz (Wtick).<br>
+<br>
+mpiexec -n 8 python3 mpi_funcoes_criancas.py<br>
+Versao do MPI = 2 Subversao = 0<br>
+Numero de tarefas = 8  Meu ranque = 3  Executando em DESKTOP-QB4IQQB<br>
+Foram gastos 0.000355 segundos com precisao de 6.984e-08 segundos<br>
+Versao do MPI = 2 Subversao = 0<br>
+Numero de tarefas = 8  Meu ranque = 0  Executando em DESKTOP-QB4IQQB<br>
+Foram gastos 0.000345 segundos com precisao de 6.984e-08 segundos<br>
+Versao do MPI = 2 Subversao = 0<br>
+Numero de tarefas = 8  Meu ranque = 4  Executando em DESKTOP-QB4IQQB<br>
+Foram gastos 0.000291 segundos com precisao de 6.984e-08 segundos<br>
+Versao do MPI = 2 Subversao = 0<br>
+Numero de tarefas = 8  Meu ranque = 5  Executando em DESKTOP-QB4IQQB<br>
+Foram gastos 0.000405 segundos com precisao de 6.984e-08 segundos<br>
+Versao do MPI = 2 Subversao = 0<br>
+Numero de tarefas = 8  Meu ranque = 6  Executando em DESKTOP-QB4IQQB<br>
+Foram gastos 0.000339 segundos com precisao de 6.984e-08 segundos<br>
+Versao do MPI = 2 Subversao = 0<br>
+Numero de tarefas = 8  Meu ranque = 2  Executando em DESKTOP-QB4IQQB<br>
+Foram gastos 0.000249 segundos com precisao de 6.984e-08 segundos<br>
+Versao do MPI = 2 Subversao = 0<br>
+Numero de tarefas = 8  Meu ranque = 7  Executando em DESKTOP-QB4IQQB<br>
+Foram gastos 0.000340 segundos com precisao de 6.984e-08 segundos<br>
+Versao do MPI = 2 Subversao = 0<br>
+Numero de tarefas = 8  Meu ranque = 1  Executando em DESKTOP-QB4IQQB<br>
+Foram gastos 0.000252 segundos com precisao de 6.984e-08 segundos<br>
+<br>
+
+<br>
 mpiexec -n 4 python3 mpi_medias_allgather.py <br>
 [Crianca 1] Soma local = 525.791824 | Media local = 0.513469<br>
 [Crianca 1] Media da turma (calculada aqui) = 0.502864<br>
