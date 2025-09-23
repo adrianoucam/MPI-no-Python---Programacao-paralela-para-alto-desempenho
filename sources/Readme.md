@@ -37,6 +37,17 @@ mpiexec -n 8 python3 mpi_aleatorio_criancas.py<br>
 [Rank 1] Valores: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, '...']<br>
 <br>
 <br>
+MPI SSEND
+Ideia: cada criança tem um número. Em rodadas de “dobrar a distância” (1, depois 2, depois 4, …), ela troca números com uma parceira.<br>
+Desta vez usamos envio síncrono (Ssend): é como falar cara a cara — quem fala só segue em frente quando tem certeza de que a outra já está ouvindo (o Recv já foi postado). Para não travar, metade das crianças envia primeiro e a outra metade recebe primeiro em cada rodada<br>
+<br>
+mpiexec -n 4 python3 mpi_sincrona_criancas.py<br>
+Rank 2: meu_valor = 8, reducao = 12<br>
+Rank 0: meu_valor = 0, reducao = 12<br>
+Rank 1: meu_valor = 4, reducao = 12<br>
+Rank 3: meu_valor = 12, reducao = 12<br>
+
+<br>
 <br>
 MPI.Datatype.Create_struct com MPI_Botton, BCast
 exemplo com tipo derivado vector e broadcast de uma coluna, explicada de forma academica.<br>
