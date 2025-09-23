@@ -227,3 +227,35 @@ o rank 0 cria as fichas e faz broadcast.<br>
 cada rank aplica um deslocamento simples nas suas fichas.<br>
 fazemos um gather de volta no rank 0, que desenha um gráfico (x vs y) com um grupo por processo.<br>
 se você estiver num ambiente sem janela gráfica, será salvo um arquivo particulas.png na pasta atual <br>
+
+<BR>
+MPI_GROUP e MPI COMM (comunicadores)
+grupos e comunicadores — explicada de forma academica .<BR>
+<BR>
+Ideia: imagine 10 crianças numeradas de 0 a 9.<BR>
+<BR>
+Montamos dois times com algumas crianças:<BR>
+<BR>
+Time A = [0, 2, 3, 4, 5, 8]<BR>
+<BR>
+Time B = [9, 4, 0, 2, 8]<BR>
+<BR>
+Depois fazemos a união dos times (sem repetir crianças) e criamos um novo pátio (comunicador) só para quem está na união.<BR>
+<BR>
+Dentro desse novo pátio, cada criança ganha um novo número de camiseta (o novo rank).<BR>
+<BR>
+Quem não está no novo time não entra no pátio novo.<BR>
+<BR>
+mpiexec -n 10 python3 mpi_grupos_criancas.py<BR>
+ranque antigo = 4 | novo ranque = 3<BR>
+ranque antigo = 3 | novo ranque = 2<BR>
+ranque antigo = 2 | novo ranque = 1<BR>
+ranque antigo = 5 | novo ranque = 4<BR>
+ranque antigo = 8 | novo ranque = 5<BR>
+ranque antigo = 9 | novo ranque = 6<BR>
+ranque antigo = 0 | novo ranque = 0<BR>
+<BR>
+(os ranks 1, 6 e 7 não aparecem porque não entraram na união dos grupos)<BR>
+<BR>
+Dica didática: o novo rank é como o novo número de camiseta dentro do novo time (comunicador). Fora desse time, o número “antigo” (rank do mundo) continua o mesmo.<BR>
+<BR>
