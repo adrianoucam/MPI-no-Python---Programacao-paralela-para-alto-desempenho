@@ -37,6 +37,24 @@ mpiexec -n 8 python3 mpi_aleatorio_criancas.py<br>
 [Rank 1] Valores: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, '...']<br>
 <br>
 <br>
+<br>
+MPI.Datatype.Create_struct com MPI_Botton, BCast
+exemplo com tipo derivado vector e broadcast de uma coluna, explicada de forma academica.<br>
+<br>
+Ideia: pense numa tabela 4×4 de números. O Líder (rank 0) quer “gritar” para todos os outros a 2ª coluna da tabela. Como essa coluna está “espalhada” na memória (não é um bloco contínuo), usamos um tipo derivado “vetor” para dizer ao MPI: “pegue 1 número por linha, pulando de 4 em 4”.<br>
+<br>
+No C, você passa &matriz[0][1] (um ponteiro para o 1º elemento da coluna) e o datatype vector faz os “saltos”. Em mpi4py, para replicar isso direitinho, a forma robusta é:<br>
+criar o datatype em bytes (Create_hvector),<br>
+ancorá-lo no endereço absoluto do primeiro elemento da coluna com um Create_struct,<br>
+e transmitir usando MPI.BOTTOM no root.<br>
+<br>
+mpiexec -n 4 python3 mpi_bcast_coluna_vector.py<br>
+Processo 1 - vetor[0] = 2.0 vetor[1] = 6.0 vetor[2] = 10.0 vetor[3] = 14.0<br>
+Processo 2 - vetor[0] = 2.0 vetor[1] = 6.0 vetor[2] = 10.0 vetor[3] = 14.0<br>
+Processo 3 - vetor[0] = 2.0 vetor[1] = 6.0 vetor[2] = 10.0 vetor[3] = 14.0<br>
+
+
+<br>
 mpi_isend, explicada de forma academica.<br>
 <br>
 Ideia: cada criança tem um número. Em rodadas de “dobrar a distância” (1, depois 2, depois 4, …), ela troca seu número com uma parceira. Usamos mensageiros rápidos (envio/recebimento não bloqueante Isend/Irecv) — eles saem correndo enquanto a criança pode fazer outras coisas; no fim chamamos Wait para garantir que a entrega chegou. Depois de cada troca, a criança guarda o maior número. No final, todas ficam com o mesmo maior número.<br>
