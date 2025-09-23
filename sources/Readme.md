@@ -51,7 +51,32 @@ Rank 3: meu_valor = 24, reducao = 56<br>
 Rank 5: meu_valor = 40, reducao = 56<br>
 Rank 1: meu_valor = 8, reducao = 56<br>
 <br>
-
+<br>
+mpi_maxloc, explicada de forma academica.<br>
+<br>
+Ideia: temos 10 “cartas” (posições 0..9). Cada criança (processo) tem um valor para cada carta. As crianças de número par colocam 50.0 na carta com o seu próprio número (se couber em 0..9). A turma quer saber, para cada carta, qual foi o maior valor e em qual criança ele apareceu — isso é o que o MAXLOC faz.<br>
+<br>
+Como em mpi4py o uso direto de MPI_MAXLOC com structs pode ser chato, vamos emular o comportamento com duas coletivas:<br>
+<br>
+Allreduce (MAX) para achar o maior valor de cada carta.<br>
+<br>
+Reduce (MIN) dos ranks candidatos (quem bateu o máximo naquela carta); quem não bateu manda “∞”. Assim, em caso de empate, fica o menor rank (igual ao MAXLOC).<br>
+<br>
+mpiexec -n 6 python3 mpi_maxloc_criancas.py<br>
+Posicao  0: Resultado = 50.0  Processo = 0<br>
+Posicao  1: Resultado =  1.0  Processo = 0<br>
+Posicao  2: Resultado = 50.0  Processo = 2<br>
+Posicao  3: Resultado =  3.0  Processo = 0<br>
+Posicao  4: Resultado = 50.0  Processo = 4<br>
+Posicao  5: Resultado =  5.0  Processo = 0<br>
+Posicao  6: Resultado =  6.0  Processo = 0<br>
+Posicao  7: Resultado =  7.0  Processo = 0<br>
+Posicao  8: Resultado =  8.0  Processo = 0<br>
+Posicao  9: Resultado =  9.0  Processo = 0<br>
+<br>
+Para cada posição (0..9), o Resultado é o maior valor alcançado naquela posição entre todos.<br>
+<br>
+Processo mostra quem (qual rank) bateu esse máximo; se deu empate, fica o menor rank <br>
 
 <BR>
 mpi_gather, explicada de forma academica:<br>
