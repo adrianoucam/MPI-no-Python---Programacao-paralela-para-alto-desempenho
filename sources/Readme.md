@@ -61,7 +61,22 @@ Versao do MPI = 2 Subversao = 0<br>
 Numero de tarefas = 8  Meu ranque = 1  Executando em DESKTOP-QB4IQQB<br>
 Foram gastos 0.000252 segundos com precisao de 6.984e-08 segundos<br>
 <br>
-
+versão com GATHER para agrupar tudo <br>
+mpiexec -n 8 python3 mpi_funcoes_criancas_gather.py<br>
+Versao do MPI = 2  Subversao = 0<br>
+<br>
+Resumo dos processos (ordenado por rank):<br>
+rank | size | maquina                      | tempo (s) | Wtick (s)<br>
+-----+------+-------------------------------+-----------+----------<br>
+   0 |    8 | DESKTOP-QB4IQQB               |  0.000341 | 6.984e-08<br>
+   1 |    8 | DESKTOP-QB4IQQB               |  0.000183 | 6.984e-08<br>
+   2 |    8 | DESKTOP-QB4IQQB               |  0.000340 | 6.984e-08<br>
+   3 |    8 | DESKTOP-QB4IQQB               |  0.000192 | 6.984e-08<br>
+   4 |    8 | DESKTOP-QB4IQQB               |  0.000214 | 6.984e-08<br>
+   5 |    8 | DESKTOP-QB4IQQB               |  0.000377 | 6.984e-08<br>
+   6 |    8 | DESKTOP-QB4IQQB               |  0.000234 | 6.984e-08<br>
+   7 |    8 | DESKTOP-QB4IQQB               |  0.000335 | 6.984e-08<br>
+<br>
 <br>
 mpiexec -n 4 python3 mpi_medias_allgather.py <br>
 [Crianca 1] Soma local = 525.791824 | Media local = 0.513469<br>
