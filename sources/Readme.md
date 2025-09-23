@@ -93,3 +93,23 @@ mpiexec -n 8 python3 mpi_broadcast_criancas.py<br>
 [Crianca 6] Recebi o valor do Lider: 4<br>
 [Crianca 7] Recebi o valor do Lider: 4<br>
 <br>
+BSEND
+
+Versão usando bsend , explicada para uso academico.
+
+Imagine que cada criança tem um cartão com 4 números iguais (ex.: [6,6,6,6]). <br>
+Em cada rodada, ela troca cartões com um “vizinho” <br>
+(que vai ficando cada vez mais distante: 1 passo, depois 2, depois 4…). <br>
+Após cada troca, cada criança fica com o maior número em cada posição. <br>
+No fim, todas sabem o maior de cada posição entre todas as crianças.<br>
+Aqui usamos Bsend (envio bufferizado): é como colocar a carta numa caixinha de correio (buffer) antes de enviar.<br>
+<br>
+mpiexec -n 4 python mpi_bsend_criancas.py<br>
+<br>
+mpiexec -n 4 python3 mpi_bsend_criancas.py<br>
+[Rank 3] Valor inicial = 12 | Cartao final (maximos) = [12, 12, 12, 12]<br>
+[Rank 1] Valor inicial = 4 | Cartao final (maximos) = [12, 12, 12, 12]<br>
+[Rank 2] Valor inicial = 8 | Cartao final (maximos) = [12, 12, 12, 12]<br>
+[INFO] Buffer de Bsend anexado com 55 bytes.<br>
+[Rank 0] Valor inicial = 0 | Cartao final (maximos) = [12, 12, 12, 12]<br>
+<br>
