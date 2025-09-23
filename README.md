@@ -1,4 +1,4 @@
-<t1>MPI em Python com mpi4py<t1>
+<b>MPI em Python com mpi4py</b>
 
 Este repositório demonstra como programar MPI (Message Passing Interface) em Python usando mpi4py, cobrindo comunicação ponto-a-ponto, operações coletivas e um exemplo em pipeline. Os scripts medem tempo, speedup e eficiência.
 
