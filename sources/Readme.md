@@ -31,9 +31,24 @@ Processo 1 recebeu: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]<br>
 Processo 2 recebeu: [20, 21, 22, 23, 24, 25, 26, 27, 28, 29]<br>
 Processo 0 recebeu: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]<br>
 Processo 3 recebeu: [30, 31, 32, 33, 34, 35, 36, 37, 38, 39]<br>
-
-
-
+<br>
+<br>
+wtime para avaliar o tempo gasto nos processos<br>
+mpiexec -n 8 python3 mpi_wtime_criancas.py --n 50000<br>
+[Rank 2] Gastos 0.004514 s para calcular a = 49999 com precisao 6.984e-08 s<br>
+[Rank 1] Gastos 0.004384 s para calcular a = 49999 com precisao 6.984e-08 s<br>
+[Rank 5] Gastos 0.004365 s para calcular a = 49999 com precisao 6.984e-08 s<br>
+[Rank 3] Gastos 0.004053 s para calcular a = 49999 com precisao 6.984e-08 s<br>
+[Rank 7] Gastos 0.004564 s para calcular a = 49999 com precisao 6.984e-08 s<br>
+[Rank 0] Gastos 0.004747 s para calcular a = 49999 com precisao 6.984e-08 s<br>
+[Rank 4] Gastos 0.003916 s para calcular a = 49999 com precisao 6.984e-08 s<br>
+[Rank 6] Gastos 0.003573 s para calcular a = 49999 com precisao 6.984e-08 s<br>
+<br>
+wtime + barrier para uma comparacao justa<br>
+mpiexec -n 2 python3 mpi_wtime_criancas_barrier.py --n 500000<br>
+[Rank 1] Tempo = 0.044915 s | a = 499999 | precisao = 6.984e-08 s<br>
+[Rank 0] Tempo = 0.047111 s | a = 499999 | precisao = 6.984e-08 s<br>
+<br>
 <br>
 MPI SEND + MPI GETCOUNT<br>
 Ideia: a Criança 0 escolhe uma quantidade aleatória de bolinhas (números) e envia para a Criança 1. A Criança 1 recebe até um máximo de 100 e usa o status da mensagem para descobrir quantas realmente chegaram, além de quem enviou e qual foi a etiqueta (tag).<br>
