@@ -36,6 +36,23 @@ mpiexec -n 8 python3 mpi_aleatorio_criancas.py<br>
 [Rank 1] Recebi 58 numero(s). Origem = 0, tag = 42.<br>
 [Rank 1] Valores: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, '...']<br>
 <br>
+<br>
+mpi_isend, explicada de forma academica.<br>
+<br>
+Ideia: cada criança tem um número. Em rodadas de “dobrar a distância” (1, depois 2, depois 4, …), ela troca seu número com uma parceira. Usamos mensageiros rápidos (envio/recebimento não bloqueante Isend/Irecv) — eles saem correndo enquanto a criança pode fazer outras coisas; no fim chamamos Wait para garantir que a entrega chegou. Depois de cada troca, a criança guarda o maior número. No final, todas ficam com o mesmo maior número.<br>
+<br>
+mpiexec -n 8 python3 mpi_isend_criancas.py<br>
+Rank 4: meu_valor = 32, reducao = 56<br>
+Rank 0: meu_valor = 0, reducao = 56<br>
+Rank 6: meu_valor = 48, reducao = 56<br>
+Rank 2: meu_valor = 16, reducao = 56<br>
+Rank 7: meu_valor = 56, reducao = 56<br>
+Rank 3: meu_valor = 24, reducao = 56<br>
+Rank 5: meu_valor = 40, reducao = 56<br>
+Rank 1: meu_valor = 8, reducao = 56<br>
+<br>
+
+
 <BR>
 mpi_gather, explicada de forma academica:<br>
 <br>
