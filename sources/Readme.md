@@ -74,3 +74,22 @@ Pressione Enter para eu chegar (ou aguarde 3s)... <br>
 [Crianca 5] Passei da barreira! Sou 5 de 8.<br>
 [Crianca 3] Passei da barreira! Sou 3 de 8.<br>
 [Crianca 7] Passei da barreira! Sou 7 de 8.<br>
+<br>
+BROADCAST<br>
+Aqui vai a versão em Python + mpi4py do seu bcast, explicada de forma academica<br>
+<br>
+Pense que o broadcast é como o líder da turma gritando um número no pátio: <br>
+o Líder (Criança 0) fala uma vez e todas as crianças escutam e passam a saber o mesmo número.<br>
+<br>
+mpiexec -n 8 python3 mpi_broadcast_criancas.py<br>
+[Lider] Entre um valor inteiro:<br>
+4<br>
+[Crianca 0] Recebi o valor do Lider: 4<br>
+[Crianca 1] Recebi o valor do Lider: 4<br>
+[Crianca 2] Recebi o valor do Lider: 4<br>
+[Crianca 4] Recebi o valor do Lider: 4<br>
+[Crianca 5] Recebi o valor do Lider: 4<br>
+[Crianca 3] Recebi o valor do Lider: 4<br>
+[Crianca 6] Recebi o valor do Lider: 4<br>
+[Crianca 7] Recebi o valor do Lider: 4<br>
+<br>
