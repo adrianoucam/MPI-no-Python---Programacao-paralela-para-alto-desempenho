@@ -18,11 +18,11 @@ No fim, cada uma consegue calcular a média da turma.<br>
 <br>
 <br>
 mpiexec -n 4 python3 mpi_medias_allgather.py <br>
-[Crianþa 1] Soma local = 525.791824 | MÚdia local = 0.513469<br>
-[Crianþa 1] MÚdia da turma (calculada aqui) = 0.502864<br>
-[Crianþa 3] Soma local = 507.466116 | MÚdia local = 0.495572<br>
-[Crianþa 3] MÚdia da turma (calculada aqui) = 0.502864<br>
-[Crianþa 2] Soma local = 514.933010 | MÚdia local = 0.502864<br>
-[Crianþa 2] MÚdia da turma (calculada aqui) = 0.502864<br>
-[Crianþa 0] Soma local = 511.540861 | MÚdia local = 0.499552<br>
-[Crianþa 0] MÚdia da turma (calculada aqui) = 0.502864<br>
+[Crianþa 1] Soma local = 525.791824 | Media local = 0.513469<br>
+[Crianþa 1] Media da turma (calculada aqui) = 0.502864<br>
+[Crianþa 3] Soma local = 507.466116 | Media local = 0.495572<br>
+[Crianþa 3] Media da turma (calculada aqui) = 0.502864<br>
+[Crianþa 2] Soma local = 514.933010 | Media local = 0.502864<br>
+[Crianþa 2] Media da turma (calculada aqui) = 0.502864<br>
+[Crianþa 0] Soma local = 511.540861 | Media local = 0.499552<br>
+[Crianþa 0] Media da turma (calculada aqui) = 0.502864<br>
