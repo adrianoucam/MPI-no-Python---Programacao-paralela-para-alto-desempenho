@@ -227,7 +227,51 @@ o rank 0 cria as fichas e faz broadcast.<br>
 cada rank aplica um deslocamento simples nas suas fichas.<br>
 fazemos um gather de volta no rank 0, que desenha um gráfico (x vs y) com um grupo por processo.<br>
 se você estiver num ambiente sem janela gráfica, será salvo um arquivo particulas.png na pasta atual <br>
-
+<br>
+MPI group include<BR>
+Dois grupos (metade/metade), novo comunicador para cada grupo e Allreduce (soma) dentro do grupo.<BR>
+Ideia: temos 8 crianças (processos) numeradas de 0 a 7.<br>
+Formamos dois times:<br>
+Time A = [0, 1, 2, 3]<br>
+Time B = [4, 5, 6, 7]<br>
+Cada criança entra no seu time (grupo) e ganha um novo número de camiseta (o novo rank) dentro do novo pátio (comunicador) do time.<br>
+Dentro de cada pátio, fazemos uma soma coletiva dos números das camisetas (Allreduce com soma).<br>
+Cada criança mostra: rank antigo, novo rank e o resultado da soma do seu time.<br>
+mpiexec -n 4 python3 mpi_grupos_meia_turma.py<br>
+[Time Cima] rank antigo =  2 | novo rank =  0 | soma do time = 5<br>
+[Time Cima] rank antigo =  3 | novo rank =  1 | soma do time = 5<br>
+[Time Baixo] rank antigo =  0 | novo rank =  0 | soma do time = 1<br>
+[Time Baixo] rank antigo =  1 | novo rank =  1 | soma do time = 1<br>
+<br>
+<br>
+mpiexec -n 10 python3 mpi_grupos_meia_turma_stats.py<br>
+[Time Baixo] rank antigo =  2 -> novo rank =  2<br>
+[Time Cima] rank antigo =  7 -> novo rank =  2<br>
+[Time Baixo] rank antigo =  1 -> novo rank =  1<br>
+[Time Cima] rank antigo =  9 -> novo rank =  4<br>
+[Time Baixo] rank antigo =  0 -> novo rank =  0<br>
+<br>
+=== Resumo do Time Baixo === <br>
+Membros (ranks antigos): [0, 1, 2, 3, 4] <br>
+Tamanho do time: 5<br>
+Soma dos ranks antigos: 10<br>
+MÚdia dos ranks antigos: 2.000<br>
+============================== <br>
+<br>
+[Time Baixo] rank antigo =  3 -> novo rank =  3<br>
+[Time Cima] rank antigo =  8 -> novo rank =  3<br>
+[Time Cima] rank antigo =  5 -> novo rank =  0<br>
+ <br>
+=== Resumo do Time Cima ===<br>
+Membros (ranks antigos): [5, 6, 7, 8, 9]<br>
+Tamanho do time: 5<br>
+Soma dos ranks antigos: 35<br>
+MÚdia dos ranks antigos: 7.000<br>
+==============================<br>
+<br>
+[Time Baixo] rank antigo =  4 -> novo rank =  4<br>
+[Time Cima] rank antigo =  6 -> novo rank =  1<br>
+<br>
 <BR>
 MPI_GROUP e MPI COMM (comunicadores)
 grupos e comunicadores — explicada de forma academica .<BR>
