@@ -41,10 +41,13 @@ Dica: no Windows, use mpiexec; em Linux/macOS, mpiexec ou mpirun.
 Instalação
 Windows (MS-MPI)
 
+https://www.microsoft.com/en-us/download/details.aspx?id=105289
+
 Instale o Microsoft MPI (MS-MPI) (Redistributable e opcionalmente o SDK).
 O binário costuma ficar em:
 C:\Program Files\Microsoft MPI\Bin\mpiexec.exe
-Adicione esse caminho à variável PATH.
+
+Adicione esse caminho à variável PATH. (Variaveis de ambiente do windows)
 
 Instale mpi4py:
 pip install mpi4py
