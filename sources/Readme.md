@@ -1,6 +1,4 @@
 
-
-
 <b>Descricao de programas exemplo usando MPI no python</b>
 <br>
 Programa de aproximação de π (pi) usando Allreduce, com explicação para uso academico.<br>
@@ -23,6 +21,19 @@ mpiexec -n 4 python3 mpi_bolinhas.py (mpirun -n 4 python3 mpi_bolinhas.py no lin
 [Rank 0] Enviei 10 bolinha(s) para o Rank 1.<br>
 [Rank 1] Recebi 10 bolinha(s). De quem? Rank 0 | Etiqueta: 0<br>
 [Rank 1] As bolinhas sÒo: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]<br>
+<br>
+<br>
+mpi_scatter<br>
+Ideia: o Líder (rank 0) tem uma fila de figurinhas (um vetor grandão). Com o Scatter, ele divide igualmente e entrega um pacotinho de TAM_VET figurinhas para cada criança (cada processo), inclusive para ele mesmo.<br>
+<br>
+mpiexec -n 4 python3 mpi_scatter_criancas.py<br>
+Processo 1 recebeu: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]<br>
+Processo 2 recebeu: [20, 21, 22, 23, 24, 25, 26, 27, 28, 29]<br>
+Processo 0 recebeu: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]<br>
+Processo 3 recebeu: [30, 31, 32, 33, 34, 35, 36, 37, 38, 39]<br>
+
+
+
 <br>
 MPI SEND + MPI GETCOUNT<br>
 Ideia: a Criança 0 escolhe uma quantidade aleatória de bolinhas (números) e envia para a Criança 1. A Criança 1 recebe até um máximo de 100 e usa o status da mensagem para descobrir quantas realmente chegaram, além de quem enviou e qual foi a etiqueta (tag).<br>
@@ -376,3 +387,37 @@ ranque antigo = 0 | novo ranque = 0<BR>
 <BR>
 Dica didática: o novo rank é como o novo número de camiseta dentro do novo time (comunicador). Fora desse time, o número “antigo” (rank do mundo) continua o mesmo.<BR>
 <BR>
+<BR>
+<BR>
+mpi_trapezio, com a mesma lógica (envios/recebimentos explícitos) e uma explicação academica.<BR>
+usando send e receive para distribuir os calculos
+<BR>
+Pense assim: queremos medir a área sob a curva da função exp(x) entre a=0 e b=1. Dividimos em muitos “trapezinhos”. Cada criança (processo) soma alguns trapezinhos, e o rank 0 junta tudo no final.<BR>
+<BR>
+mpiexec -n 4 python3 mpi_trapezio_criancas.py<BR>
+Foram gastos 11.3 segundos<BR>
+Com n = 100000000 trapezoides, a estimativa<BR>
+da integral de 0.000000 ate 1.000000 = 1.718281855372<BR>
+<BR>
+mpiexec -n 8 python3 mpi_trapezio_criancas.py<BR>
+Foram gastos 7.2 segundos<BR>
+Com n = 100000000 trapezoides, a estimativa<BR>
+da integral de 0.000000 ate 1.000000 = 1.718281855573<BR>
+<BR>
+<BR>
+versão curta usando coletiva (Reduce).<BR>
+Se quiser que todos os processos recebam o resultado, troque reduce por allreduce.<BR>
+versão de trapezio com reduce , ficou mais lenta nos meus testes <BR>
+<BR>
+mpiexec -n 4 python3 mpi_trapezio_coletiva.py<BR>
+Foram gastos 18.2 segundos<BR>
+Com n = 100000000 trapezoides, a estimativa<BR>
+da integral de 0.000000 atÚ 1.000000 = 1.718281828459<BR>
+<BR>
+mpiexec -n 8 python3 mpi_trapezio_coletiva.py<BR>
+Foram gastos 10.9 segundos<BR>
+Com n = 100000000 trapezoides, a estimativa<BR>
+da integral de 0.000000 atÚ 1.000000 = 1.718281828459<BR>
+
+
+
