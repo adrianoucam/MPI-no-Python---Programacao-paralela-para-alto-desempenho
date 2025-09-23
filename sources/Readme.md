@@ -21,7 +21,29 @@ mpiexec -n 4 python3 mpi_bolinhas.py (mpirun -n 4 python3 mpi_bolinhas.py no lin
 [Rank 0] Enviei 10 bolinha(s) para o Rank 1.<br>
 [Rank 1] Recebi 10 bolinha(s). De quem? Rank 0 | Etiqueta: 0<br>
 [Rank 1] As bolinhas sÒo: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]<br>
+<br>
+mpi_gather, explicada de forma academica:<br>
+<br>
+Pense que cada criança (processo) tem um bloquinho com 10 números. Cada criança preenche seu bloquinho com o seu número (o <br>rank). Depois, o Líder (rank 0) junta todos os bloquinhos com um Gather e mostra o resultado.<br>
+mpiexec -n 8 python3 mpi_gather_criancas.py<br>
+[Lider] Recebi 8 bloquinhos de tamanho 10.<br>
+<br>
+Do processo 0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]<br>
+Do processo 1: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]<br>
+Do processo 2: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]<br>
+Do processo 3: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]<br>
+Do processo 4: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]<br>
+Do processo 5: [5, 5, 5, 5, 5, 5, 5, 5, 5, 5]<br>
+Do processo 6: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6]<br>
+Do processo 7: [7, 7, 7, 7, 7, 7, 7, 7, 7, 7]<br>
+<br>
+Vetor achatado (como no C):<br>
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]<br>
+<br>
 
+
+<br>
+<br>
 Python + mpi4py do seu mpi_allgather.c, explicada “para crianças”. <br>
 Pense que cada criança (processo) tem 1024 bolinhas com números entre 0 e 1. <br>
 Cada criança calcula a sua média e depois todas as crianças trocam suas médias entre si <br>
