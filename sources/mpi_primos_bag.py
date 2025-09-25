@@ -1,30 +1,21 @@
-# mpi_primos_bag.py
-# Contagem de primos em 1..n com distribuição dinâmica de tarefas (bag-of-tasks)
-# Mestre (rank 0) envia blocos de tamanho CHUNK para trabalhadores (ranks >= 1).
-# Trabalhadores contam primos ímpares no bloco e devolvem a parcial.
-# Ao final, o mestre soma +1 para o primo 2 (se n >= 2).
-# pip install mpi4py
-# mpiexec -n 4 python mpi_primos_bag.py 100000000
-
+# mpi_primos_bag_fixed.py
 from mpi4py import MPI
 import numpy as np
 import math
 import sys
 
-CHUNK = 500_000        # equivalente a #define TAMANHO 500000
+CHUNK = 500_000
 TAG_WORK = 1
 TAG_STOP = 99
 ROOT = 0
 
 def is_prime(n: int) -> bool:
-    """Teste simples de primalidade para inteiros positivos."""
     if n < 2:
         return False
     if n == 2:
         return True
     if (n % 2) == 0:
         return False
-    # testa ímpares até sqrt(n)
     limit = int(math.isqrt(n))
     for i in range(3, limit + 1, 2):
         if (n % i) == 0:
@@ -32,45 +23,44 @@ def is_prime(n: int) -> bool:
     return True
 
 def master(comm: MPI.Comm, n: int, size: int):
-    """Lógica do mestre: distribui blocos, agrega parciais, envia STOP."""
     t0 = MPI.Wtime()
 
     total = 0
-    next_start = 3  # começamos pelos ímpares >= 3
+    next_start = 3  # primeiro ímpar >=3
 
-    # Envia um primeiro bloco para cada trabalhador; se não houver trabalho, já envia STOP
-    workers = range(1, size)
-    for dest in workers:
+    # 1) Distribuição inicial + CONTAGEM de trabalhadores ATIVOS
+    active = 0
+    for dest in range(1, size):
         if next_start < n:
             start_arr = np.array([next_start], dtype='i')
             comm.Send([start_arr, MPI.INT], dest=dest, tag=TAG_WORK)
             next_start += CHUNK
+            active += 1              # <--- só conta quem recebeu TRABALHO
         else:
             dummy = np.array([0], dtype='i')
             comm.Send([dummy, MPI.INT], dest=dest, tag=TAG_STOP)
+            # não incrementa 'active' (esse worker já parou e não mandará nada)
 
-    # Recebe parciais e reenvia novo trabalho até esgotar; depois manda STOP
-    stopped = 0
+    # 2) Enquanto houver trabalhadores ATIVOS, receba parciais e reabasteça
     status = MPI.Status()
     recv_cont = np.empty(1, dtype='i')
 
-    while stopped < (size - 1):
-        # recebe de qualquer trabalhador que terminou
+    while active > 0:
         comm.Recv([recv_cont, MPI.INT], source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status)
         src = status.Get_source()
         total += int(recv_cont[0])
 
-        # há mais trabalho?
         if next_start < n:
             start_arr = np.array([next_start], dtype='i')
             comm.Send([start_arr, MPI.INT], dest=src, tag=TAG_WORK)
             next_start += CHUNK
+            # 'active' permanece igual (o mesmo worker segue ativo)
         else:
             dummy = np.array([0], dtype='i')
             comm.Send([dummy, MPI.INT], dest=src, tag=TAG_STOP)
-            stopped += 1
+            active -= 1              # <--- esse worker encerrou
 
-    # acrescenta o primo 2, se aplicável
+    # 3) Ajuste do primo 2 (se aplicável)
     if n >= 2:
         total += 1
 
@@ -79,7 +69,6 @@ def master(comm: MPI.Comm, n: int, size: int):
     print(f"Tempo de execucao: {t1 - t0:0.3f} s")
 
 def worker(comm: MPI.Comm, n: int):
-    """Lógica do trabalhador: recebe bloco, conta primos ímpares e devolve parcial."""
     status = MPI.Status()
     start_buf = np.empty(1, dtype='i')
 
@@ -90,12 +79,14 @@ def worker(comm: MPI.Comm, n: int):
             break
 
         start = int(start_buf[0])
-        # limite superior do bloco (sem ultrapassar n); respeita semântica i < n do C original
-        upper = min(start + CHUNK, n)
+        # Garante que o início seja ÍMPAR (para não pular ímpares)
+        if start % 2 == 0:
+            start += 1
 
-        # contamos apenas ímpares (start sempre ímpar)
+        upper = min(start + CHUNK, n)  # i < n (compatível com o C)
+
         count = 0
-        for i in range(start, upper, 2):
+        for i in range(start, upper, 2):  # só ímpares
             if is_prime(i):
                 count += 1
 
@@ -103,7 +94,6 @@ def worker(comm: MPI.Comm, n: int):
         comm.Send([cont_arr, MPI.INT], dest=ROOT, tag=TAG_WORK)
 
 def main():
-    # leitura do parâmetro n
     if len(sys.argv) < 2:
         print("Entre com o valor do maior inteiro como parâmetro para o programa.")
         sys.exit(0)
