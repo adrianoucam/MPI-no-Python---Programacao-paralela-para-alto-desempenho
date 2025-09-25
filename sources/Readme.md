@@ -652,4 +652,25 @@ Objetivo pedagógico: mostrar como o Multigrid reduz erro em vários comprimento
 mpiexec -n 4 python3 mpi_multigrid_vcycle.py --Nx 128 --Ny 128 --cycles 5
 <br>
 <br>
+<br>
+exemplo acadêmico EP (Embarrassingly Parallel) – Monte Carlo em Python + mpi4py.
+Cada processo gera pontos aleatórios de forma independente e só se comunica no final usando Reduce ou Allreduce para somar os acertos.<br>
+<br><br>
+mpiexec -n 4 python ep_monte_carlo.py --samples-per-rank 2000000 --op allreduce<br>
+mpiexec -n 4 python ep_monte_carlo.py --samples-per-rank 2000000 --op reduce<br>
+mpiexec -n 4 python ep_monte_carlo.py --samples-per-rank 2000000 --op both<br>
+<br>
+O que esse exemplo ilustra
+
+EP (Embarassingly Parallel): cada rank trabalha 100% independente (gera amostras e conta acertos).
+
+Reduce (root-only): apenas o rank 0 recebe as somas globais.
+
+Allreduce (broadcast do resultado): todos recebem as somas globais.
+
+Determinismo: sementes independentes por rank (seed + rank*1_000_003).
+
+Escalabilidade: comunicação mínima (somente 2 inteiros por rank no final).
+
+Memória controlada: geração de amostras por chunks.
 
