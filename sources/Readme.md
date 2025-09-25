@@ -673,8 +673,664 @@ mpiexec -n 4 python3 ep_monte_carlo.py --samples-per-rank 2000000 --op allreduce
 [EP Monte Carlo] P=4 | samples_per_rank=2,000,000 | total=8,000,000 <br>
 Tempo total: 0.154422 s <br>
   Allreduce -> pi ~= 3.140547000000 | erro=1.046e-03 <br>
+<br>
+<br>
+Codigo em python para uso academico para testar CG - Ax=b esparso (SpMV) Por linhas/blocos Halo exchange + Allreduce Isend/Irecv/Sendrecv, Allreduce<br>
 
-  
+<br>
+CG (Conjugate Gradient) distribuído com SpMV esparso, halo exchange e reduções globais
+
+Este material explica — de forma didática e no estilo de “README de GitHub” — como implementar e entender um resolvedor Conjugate Gradient (CG) paralelo para o sistema linear esparso
+
+𝐴
+ 
+𝑥
+=
+𝑏
+,
+Ax=b,
+
+onde A é simétrica definida positiva (SPD). No exemplo acadêmico, A vem do Laplaciano 2D com condições de contorno de Dirichlet (u=0 nas bordas), discretizado por stencil de 5 pontos. O foco é mostrar:
+
+SpMV (produto matriz–vetor) matriceless (sem montar A): usamos diretamente o stencil.
+
+Decomposição por linhas/blocos (1D): cada processo guarda um bloco contíguo de linhas do domínio global.
+
+Troca de halos (ghost rows) entre processos vizinhos para viabilizar o stencil.
+
+Comunicação ponto-a-ponto com Sendrecv (bloqueante) ou Isend/Irecv (não-bloqueante).
+
+Reduções globais com Allreduce (produtos internos e norma do resíduo).
+
+1) Problema de referência
+
+Domínio: 
+[
+0
+,
+1
+]
+×
+[
+0
+,
+1
+]
+[0,1]×[0,1], malha uniforme 
+𝑁
+𝑥
+×
+𝑁
+𝑦
+N
+x
+	​
+
+×N
+y
+	​
+
+.
+
+Operador: 
+−
+∇
+2
+𝑢
+=
+𝑓
+−∇
+2
+u=f com 
+𝑢
+=
+0
+u=0 nas bordas.
+
+Discretização 5-pontos em cada célula interior:
+
+(
+𝐴
+𝑢
+)
+𝑖
+,
+𝑗
+  
+=
+  
+4
+ 
+𝑢
+𝑖
+,
+𝑗
+−
+(
+𝑢
+𝑖
+−
+1
+,
+𝑗
++
+𝑢
+𝑖
++
+1
+,
+𝑗
++
+𝑢
+𝑖
+,
+𝑗
+−
+1
++
+𝑢
+𝑖
+,
+𝑗
++
+1
+)
+(Au)
+i,j
+	​
+
+=4u
+i,j
+	​
+
+−(u
+i−1,j
+	​
+
++u
+i+1,j
+	​
+
++u
+i,j−1
+	​
+
++u
+i,j+1
+	​
+
+)
+
+Observação: frequentemente absorvemos 
+ℎ
+−
+2
+h
+−2
+ no lado direito (
+𝑏
+=
+ℎ
+2
+𝑓
+b=h
+2
+f) para simplificar a notação do SpMV.
+
+2) Por que SpMV matriceless?
+
+Em malhas regulares, A tem estrutura local (stencil). Montar uma matriz esparsa global é desnecessário e caro. Em vez disso, computamos 
+(
+𝐴
+𝑣
+)
+(Av) no ato, apenas com acessos aos vizinhos de cada nó. Isso reduz memória e melhora cache.
+
+3) Decomposição por linhas/blocos
+
+Dividimos o domínio global por faixas horizontais de linhas (decomposição 1D):
+
+Global (Ny x Nx)
++--------- Rank 0 ---------+
+| linhas 0 .. y_end_0      |
++--------- Rank 1 ---------+
+| linhas y0+1 .. y_end_1   |
++--------- Rank 2 ---------+
+| ...                      |
++--------- Rank P-1 -------+
+| ...                      |
++--------------------------+
+
+
+Cada processo armazena seu bloco com duas linhas fantasma (uma no topo, outra na base). Essas linhas formam o halo, preenchido com dados reais vindos dos vizinhos. As colunas laterais usam Dirichlet 0 (sem troca lateral neste particionamento 1D).
+
+4) Halo exchange (linhas fantasmas)
+
+Antes de aplicar o stencil, precisamos dos valores da linha de cima do vizinho de cima, e da linha de baixo do vizinho de baixo.
+
+Opção A — Sendrecv (simétrico, bloqueante)
+
+Passo 1: envia a 1ª linha interior para cima e recebe do vizinho de baixo (preenche ghost sul).
+
+Passo 2: envia a última linha interior para baixo e recebe do vizinho de cima (preenche ghost norte).
+
+Opção B — Isend/Irecv (não-bloqueante)
+
+Posta dois Irecv (de cima e baixo).
+
+Posta dois Isend (para cima e baixo).
+
+Finaliza com Waitall.
+
+Sem deadlock: use tags consistentes e sempre o mesmo padrão de envio/recebimento em todos os processos.
+
+5) Conjugate Gradient (CG) com reduções globais
+
+O CG clássico (para SPD) itera:
+
+𝑟
+0
+=
+𝑏
+−
+𝐴
+𝑥
+0
+r
+0
+	​
+
+=b−Ax
+0
+	​
+
+, 
+𝑝
+0
+=
+𝑟
+0
+p
+0
+	​
+
+=r
+0
+	​
+
+
+Para 
+𝑘
+=
+0
+,
+1
+,
+2
+,
+…
+k=0,1,2,… até convergir:
+
+SpMV: 
+𝐴
+𝑝
+𝑘
+Ap
+k
+	​
+
+ → requer halo exchange.
+
+𝛼
+𝑘
+=
+𝑟
+𝑘
+𝑇
+𝑟
+𝑘
+𝑝
+𝑘
+𝑇
+𝐴
+𝑝
+𝑘
+α
+k
+	​
+
+=
+p
+k
+T
+	​
+
+Ap
+k
+	​
+
+r
+k
+T
+	​
+
+r
+k
+	​
+
+	​
+
+  (2 produtos internos)
+→ Allreduce(SUM) para cada dot product.
+
+𝑥
+𝑘
++
+1
+=
+𝑥
+𝑘
++
+𝛼
+𝑘
+𝑝
+𝑘
+x
+k+1
+	​
+
+=x
+k
+	​
+
++α
+k
+	​
+
+p
+k
+	​
+
+
+𝑟
+𝑘
++
+1
+=
+𝑟
+𝑘
+−
+𝛼
+𝑘
+𝐴
+𝑝
+𝑘
+r
+k+1
+	​
+
+=r
+k
+	​
+
+−α
+k
+	​
+
+Ap
+k
+	​
+
+
+Critério de parada: 
+∥
+𝑟
+𝑘
++
+1
+∥
+2
+/
+∥
+𝑟
+0
+∥
+2
+<
+tol
+∥r
+k+1
+	​
+
+∥
+2
+	​
+
+/∥r
+0
+	​
+
+∥
+2
+	​
+
+<tol
+→ Allreduce(SUM) para norma global.
+
+𝛽
+𝑘
+=
+𝑟
+𝑘
++
+1
+𝑇
+𝑟
+𝑘
++
+1
+𝑟
+𝑘
+𝑇
+𝑟
+𝑘
+β
+k
+	​
+
+=
+r
+k
+T
+	​
+
+r
+k
+	​
+
+r
+k+1
+T
+	​
+
+r
+k+1
+	​
+
+	​
+
+
+𝑝
+𝑘
++
+1
+=
+𝑟
+𝑘
++
+1
++
+𝛽
+𝑘
+𝑝
+𝑘
+p
+k+1
+	​
+
+=r
+k+1
+	​
+
++β
+k
+	​
+
+p
+k
+	​
+
+
+Onde entra comunicação coletiva?
+
+Allreduce para:
+
+𝑟
+𝑘
+𝑇
+𝑟
+𝑘
+r
+k
+T
+	​
+
+r
+k
+	​
+
+ (norma global do resíduo)
+
+𝑝
+𝑘
+𝑇
+𝐴
+𝑝
+𝑘
+p
+k
+T
+	​
+
+Ap
+k
+	​
+
+ (produto interno para 
+𝛼
+α)
+
+Pontos de sincronização do método.
+
+6) Esqueleto do algoritmo (pseudocódigo MPI)
+Particiona Ny entre P ranks → cada um fica com ny_local linhas (+ halos)
+
+x = 0
+b_int = h^2          # interior do bloco local (Dirichlet 0 nas bordas globais)
+r = b - A*x = b
+p = r
+rr = Allreduce( dot(r, r), SUM )
+rr0 = rr
+
+for k = 1..max_iters:
+    # SpMV distribuído
+    HALO_EXCHANGE(p)           # Sendrecv OU Isend/Irecv + Waitall
+    Ap = A * p                 # stencil 5-pontos (somente interior)
+
+    pAp = Allreduce( dot(p, Ap), SUM )
+    alpha = rr / pAp
+
+    x = x + alpha * p
+    r = r - alpha * Ap
+
+    rr_new = Allreduce( dot(r, r), SUM )
+    if sqrt(rr_new/rr0) < tol: break
+
+    beta = rr_new / rr
+    p = r + beta * p
+    rr = rr_new
+
+7) Balanceamento, custo e escalabilidade
+
+Custo computacional (SpMV): proporcional ao número de nós locais (
+∼
+a
+ˊ
+rea
+∼
+a
+ˊ
+rea).
+
+Custo de comunicação (halo): proporcional ao perímetro do subdomínio.
+→ Com decomposição 1D, trocamos duas linhas por iteração (pequeno overhead).
+
+Allreduce: traz latência logarítmica (árvore). É inevitável no CG; minimizar outras comunicações ajuda.
+
+8) Checklist de robustez (sem deadlock)
+
+Todos os ranks chamam as mesmas coletivas na mesma ordem (Allreduce).
+
+Em Sendrecv/Isend/Irecv:
+
+Tags e pares (fonte/destino) batem entre vizinhos.
+
+Comprimentos das mensagens são iguais nos dois lados.
+
+Halos laterais (decomposição 1D) são Dirichlet 0 — não tente trocar colunas neste modelo.
+
+Aritmética: normalize com resíduo relativo 
+∥
+𝑟
+∥
+/
+∥
+𝑟
+0
+∥
+∥r∥/∥r
+0
+	​
+
+∥ para um critério de parada estável.
+
+9) Como rodar (exemplo)
+pip install mpi4py numpy
+
+# 4 processos, domínio 256x256, halo por Sendrecv (bloqueante)
+mpiexec -n 4 python cg_spmv_ep.py --Nx 256 --Ny 256 --mode sendrecv --max-iters 200 --tol 1e-8
+
+# 4 processos, halo não-bloqueante (Isend/Irecv)
+mpiexec -n 4 python cg_spmv_ep.py --Nx 256 --Ny 256 --mode isendirecv
+
+
+Validação rápida: o resíduo relativo deve decrescer monotonicamente e ficar < tol em poucas dezenas/centenas de iterações (dependendo de 
+𝑁
+N).
+
+10) Extensões e variações
+
+Decomposição 2D (blocos 
+𝑃
+𝑦
+×
+𝑃
+𝑥
+P
+y
+	​
+
+×P
+x
+	​
+
+): halo em 4 direções.
+
+Precondicionadores (Jacobi, SSOR, AMG) → reduzem iterações, mas introduzem mais comunicação.
+
+Overlap comunicação–computação com Isend/Irecv (postar trocas antes do cálculo de linhas “internas”).
+
+Arquivo de referência
+
+O exemplo completo (CG + SpMV + halo + Allreduce), com ambas as variantes de comunicação, está implementado no script cg_spmv_ep.py neste repositório.
+<br>
+mpiexec -n 8 python3 cg_spmv_ep.py --Nx 256 --Ny 256 --mode sendrecv<br>
+[init] ||r||/||r0|| = 1.000e+00  (rr=1.502e-05)<br>
+[it    1] ||r||/||r0|| = 7.969e+00<br>
+[it   10] ||r||/||r0|| = 8.541e+00<br>
+[it   20] ||r||/||r0|| = 7.979e+00<br>
+[it   30] ||r||/||r0|| = 7.378e+00<br>
+[it   40] ||r||/||r0|| = 6.769e+00<br>
+[it   50] ||r||/||r0|| = 6.170e+00<br>
+[it   60] ||r||/||r0|| = 5.588e+00<br>
+[it   70] ||r||/||r0|| = 5.025e+00<br>
+[it   80] ||r||/||r0|| = 4.483e+00<br>
+[it   90] ||r||/||r0|| = 3.962e+00<br>
+[it  100] ||r||/||r0|| = 3.462e+00<br>
+[it  110] ||r||/||r0|| = 2.981e+00<br>
+[it  120] ||r||/||r0|| = 2.520e+00<br>
+[it  130] ||r||/||r0|| = 2.078e+00<br>
+[it  140] ||r||/||r0|| = 1.653e+00<br>
+[it  150] ||r||/||r0|| = 1.245e+00<br>
+[it  160] ||r||/||r0|| = 8.495e-01<br>
+[it  170] ||r||/||r0|| = 4.653e-01<br>
+[it  180] ||r||/||r0|| = 1.467e-01<br>
+[it  190] ||r||/||r0|| = 2.020e-01<br>
+[it  200] ||r||/||r0|| = 1.676e-01<br>
+<br>
+[Resumo] modo=sendrecv  P=8  Nx=256 Ny=256<br>
+Convergiu (||r||/||r0|| = 1.676e-01) em 200 iteracoes. Tempo total: 0.363087 s<br>
+<br>
 
 Determinismo: sementes independentes por rank (seed + rank*1_000_003).
 
