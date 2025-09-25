@@ -888,307 +888,20 @@ Sem deadlock: use tags consistentes e sempre o mesmo padrão de envio/recebiment
 
 O CG clássico (para SPD) itera:
 
-𝑟
-0
-=
-𝑏
-−
-𝐴
-𝑥
-0
-r
-0
-	​
-
-=b−Ax
-0
-	​
-
-, 
-𝑝
-0
-=
-𝑟
-0
-p
-0
-	​
-
-=r
-0
-	​
-
-
-Para 
-𝑘
-=
-0
-,
-1
-,
-2
-,
-…
-k=0,1,2,… até convergir:
-
-SpMV: 
-𝐴
-𝑝
-𝑘
-Ap
-k
-	​
-
- → requer halo exchange.
-
-𝛼
-𝑘
-=
-𝑟
-𝑘
-𝑇
-𝑟
-𝑘
-𝑝
-𝑘
-𝑇
-𝐴
-𝑝
-𝑘
-α
-k
-	​
-
-=
-p
-k
-T
-	​
-
-Ap
-k
-	​
-
-r
-k
-T
-	​
-
-r
-k
-	​
-
+k=0,1,2,… até convergir: 
+SpMV:  requer halo exchange.
 	​
 
   (2 produtos internos)
-→ Allreduce(SUM) para cada dot product.
-
-𝑥
-𝑘
-+
-1
-=
-𝑥
-𝑘
-+
-𝛼
-𝑘
-𝑝
-𝑘
-x
-k+1
-	​
-
-=x
-k
-	​
-
-+α
-k
-	​
-
-p
-k
-	​
-
-
-𝑟
-𝑘
-+
-1
-=
-𝑟
-𝑘
-−
-𝛼
-𝑘
-𝐴
-𝑝
-𝑘
-r
-k+1
-	​
-
-=r
-k
-	​
-
-−α
-k
-	​
-
-Ap
-k
-	​
-
+ Allreduce(SUM) para cada dot product.
 
 Critério de parada: 
-∥
-𝑟
-𝑘
-+
-1
-∥
-2
-/
-∥
-𝑟
-0
-∥
-2
-<
-tol
-∥r
-k+1
-	​
-
-∥
-2
-	​
-
-/∥r
-0
-	​
-
-∥
-2
-	​
-
-<tol
-→ Allreduce(SUM) para norma global.
-
-𝛽
-𝑘
-=
-𝑟
-𝑘
-+
-1
-𝑇
-𝑟
-𝑘
-+
-1
-𝑟
-𝑘
-𝑇
-𝑟
-𝑘
-β
-k
-	​
-
-=
-r
-k
-T
-	​
-
-r
-k
-	​
-
-r
-k+1
-T
-	​
-
-r
-k+1
-	​
-
-	​
-
-
-𝑝
-𝑘
-+
-1
-=
-𝑟
-𝑘
-+
-1
-+
-𝛽
-𝑘
-𝑝
-𝑘
-p
-k+1
-	​
-
-=r
-k+1
-	​
-
-+β
-k
-	​
-
-p
-k
-	​
-
+Allreduce(SUM) para norma global.
 
 Onde entra comunicação coletiva?
 
 Allreduce para:
-
-𝑟
-𝑘
-𝑇
-𝑟
-𝑘
-r
-k
-T
-	​
-
-r
-k
-	​
-
- (norma global do resíduo)
-
-𝑝
-𝑘
-𝑇
-𝐴
-𝑝
-𝑘
-p
-k
-T
-	​
-
-Ap
-k
-	​
-
- (produto interno para 
-𝛼
-α)
+ (produto interno para 𝛼 α)
 
 Pontos de sincronização do método.
 
@@ -1222,15 +935,7 @@ for k = 1..max_iters:
 
 7) Balanceamento, custo e escalabilidade
 
-Custo computacional (SpMV): proporcional ao número de nós locais (
-∼
-a
-ˊ
-rea
-∼
-a
-ˊ
-rea).
+Custo computacional (SpMV): proporcional ao número de nós locais .
 
 Custo de comunicação (halo): proporcional ao perímetro do subdomínio.
 → Com decomposição 1D, trocamos duas linhas por iteração (pequeno overhead).
@@ -1249,20 +954,7 @@ Comprimentos das mensagens são iguais nos dois lados.
 
 Halos laterais (decomposição 1D) são Dirichlet 0 — não tente trocar colunas neste modelo.
 
-Aritmética: normalize com resíduo relativo 
-∥
-𝑟
-∥
-/
-∥
-𝑟
-0
-∥
-∥r∥/∥r
-0
-	​
-
-∥ para um critério de parada estável.
+Aritmética: normalize com resíduo relativo para um critério de parada estável.
 
 9) Como rodar (exemplo)
 pip install mpi4py numpy
@@ -1273,28 +965,11 @@ mpiexec -n 4 python cg_spmv_ep.py --Nx 256 --Ny 256 --mode sendrecv --max-iters 
 # 4 processos, halo não-bloqueante (Isend/Irecv)
 mpiexec -n 4 python cg_spmv_ep.py --Nx 256 --Ny 256 --mode isendirecv
 
-
-Validação rápida: o resíduo relativo deve decrescer monotonicamente e ficar < tol em poucas dezenas/centenas de iterações (dependendo de 
-𝑁
-N).
+Validação rápida: o resíduo relativo deve decrescer monotonicamente e ficar < tol em poucas dezenas/centenas de iterações (dependendo de 𝑁 N).
 
 10) Extensões e variações
 
-Decomposição 2D (blocos 
-𝑃
-𝑦
-×
-𝑃
-𝑥
-P
-y
-	​
-
-×P
-x
-	​
-
-): halo em 4 direções.
+Decomposição 2D (blocos ): halo em 4 direções.
 
 Precondicionadores (Jacobi, SSOR, AMG) → reduzem iterações, mas introduzem mais comunicação.
 
