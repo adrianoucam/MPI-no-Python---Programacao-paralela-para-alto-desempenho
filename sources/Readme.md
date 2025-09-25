@@ -294,9 +294,13 @@ int primo (int n) {
   }
   return 1;
 }
-
-mpiexec -n 4 python mpi_primos_bag.py 100000000
-
+<br>
+mpiexec -n 4 python mpi_primos_bag.py 100000000<br>
+<br>
+mpiexec -n 16 python3 mpi_primos_bag.py 10000<br>
+Quant. de primos entre 1 e 10000: 1229<br>
+Tempo de execucao: 0.009 s<br>
+<br>
 
 <br>
 <br>
@@ -597,6 +601,19 @@ mpiexec -n 4  python3 all_to_all.py<br>
 [Entrada]  rank 2: [200, 201, 202, 203]<br>
 [Saida]    rank 2: [2, 102, 202, 302]<br>
 [Sensor 2] min=2  max=302  media=152.00<br>
+<br>
+<br>
+<br>
+Dividindo os problemas para todos <br>
+
+mpiexec -n 4 python3 is_alltoall_demo.py --n 10000 --K 1000 --debug<br>
+[rank 3] recv=9926  faixas_ok=True  total_ok=True borders_ok=True  range=(750,1000)<br>
+[rank 2] recv=10159  faixas_ok=True  total_ok=True borders_ok=True  range=(500,750)<br>
+[rank 1] recv=10028  faixas_ok=True  total_ok=True borders_ok=True  range=(250,500)<br>
+[DEBUG] global_counts = [9887, 10028, 10159, 9926]<br>
+[rank 0] recv=9887  faixas_ok=True  total_ok=True borders_ok=True  range=(0,250)<br>
+[OK=True] tempo total = 0.032947 s  (P=4, N=10000, K=1000)<br>
+<br>
 <br>
 <br>
 Exemplo Acadêmico: Multigrid (Ciclo-V) 2D para Poisson<br>
