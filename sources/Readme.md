@@ -154,6 +154,148 @@ Do processo 7: [7, 7, 7, 7, 7, 7, 7, 7, 7, 7]<br>
 Vetor achatado (como no C):<br>
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]<br>
 <br>
+<br>
+Contagem de Primos com MPI (Bag-of-Tasks)
+
+Este exemplo conta quantos números primos existem em 1..n usando distribuição dinâmica de trabalho (bag-of-tasks) com MPI.
+
+Linguagem: C (MPI)
+
+Arquivo: mpi_primosbag.c
+
+Padrões MPI: comunicação ponto-a-ponto (MPI_Send, MPI_Recv), curingas (MPI_ANY_SOURCE, MPI_ANY_TAG), cronômetro (MPI_Wtime), barreira (MPI_Barrier)
+
+Por que bag-of-tasks?
+
+Testes de primalidade têm custos desiguais. Em vez de dar um bloco fixo para cada processo (risco de desbalanceamento), o mestre (rank 0) mantém uma “sacola” de tarefas (intervalos de tamanho TAMANHO) e realimenta cada trabalhador quando ele termina, até esgotar o domínio.
+
+Como funciona
+
+Parâmetros
+
+n (linha de comando): maior inteiro a testar (1..n).
+
+TAMANHO (define o tamanho do bloco enviado a cada trabalhador; padrão 500000).
+
+Mestre (rank 0)
+
+Marca tempo inicial com MPI_Wtime().
+
+Envia blocos iniciais (inicio = 3, 3+TAMANHO, …) para ranks 1..P-1.
+
+Em laço:
+
+Recebe contagem parcial de qualquer trabalhador (MPI_ANY_SOURCE).
+
+Soma em total.
+
+Se ainda há trabalho (inicio ≤ n), envia novo bloco com tag normal (tag=1).
+
+Caso contrário, envia mensagem de término (tag 99) para esse trabalhador.
+
+Soma 1 pelo número primo 2 (tratado à parte).
+
+Imprime contagem total e tempo de execução.
+
+Trabalhadores (ranks ≥ 1)
+
+Em laço:
+
+Recebem inicio do mestre; se tag=99, encerram.
+
+Senão, contam primos ímpares no intervalo [inicio, min(inicio+TAMANHO, n)) (passo 2).
+
+Enviam cont de volta ao mestre.
+
+Teste de primalidade: função primo(i) verifica divisores ímpares até ⌊√i⌋. O 2 é somado separadamente pelo mestre.
+
+Chamadas MPI (núcleo)
+// Mestre: distribuição dinâmica
+MPI_Send(&inicio, 1, MPI_INT, dest, tag, MPI_COMM_WORLD);
+MPI_Recv(&cont, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
+
+// Cronometragem
+t_inicial = MPI_Wtime();
+// ... trabalho ...
+t_final = MPI_Wtime();
+
+// Sincronização final
+MPI_Barrier(MPI_COMM_WORLD);
+
+Compilação e execução
+# Compilar (link com libm por causa de sqrt)
+mpicc -O2 -lm mpi_primosbag.c -o mpi_primosbag
+
+# Executar (mínimo 2 processos: 1 mestre + 1 trabalhador)
+mpiexec -n 4 ./mpi_primosbag 100000000
+
+
+Saída (exemplo):
+
+Quant. de primos entre 1 e 100000000: 5761455
+Tempo de execucao: 3.842
+
+
+Os valores dependem da máquina e do TAMANHO.
+
+Dicas de uso
+
+Processos: P ≥ 2 (1 mestre + ≥1 trabalhador).
+
+TAMANHO:
+
+Grande: menos mensagens, mas pode desbalancear.
+
+Pequeno: melhor balanceamento, porém mais overhead de comunicação.
+
+Acurácia:
+
+Só ímpares são testados (i += 2); o 2 entra no final.
+
+Cada trabalhador limita seu intervalo a i < n.
+
+Melhorias possíveis:
+
+Peneira segmentada (Sieve) para acelerar.
+
+Non-blocking (MPI_Isend/Irecv + MPI_Wait*) para sobrepor computação/comunicação.
+
+OpenMP dentro do processo para paralelizar a contagem do bloco.
+
+Pseudocódigo
+mestre:
+  t0 = Wtime()
+  distribuir blocos iniciais a ranks 1..P-1
+  enquanto stop < P-1:
+    recv(cont, de qualquer)
+    total += cont
+    se ainda há trabalho:
+       send(novo_inicio, tag=1, para esse rank)
+    senao:
+       send(_, tag=99, para esse rank)  // sinaliza término
+       stop++
+  total += 1  // inclui o primo 2
+  print(total, Wtime()-t0)
+
+trabalhador:
+  repita:
+    recv(inicio, tag)
+    se tag == 99: break
+    cont = contar_primos_ímpares(inicio .. inicio+TAMANHO)
+    send(cont, para mestre)
+
+Trecho do teste de primalidade (C)
+int primo (int n) {
+  if (n < 2) return 0;
+  if (n == 2) return 1;
+  if (n % 2 == 0) return 0;
+  for (int i = 3; i <= (int)(sqrt(n)); i += 2) {
+    if (n % i == 0) return 0;
+  }
+  return 1;
+}
+
+mpiexec -n 4 python mpi_primos_bag.py 100000000
 
 
 <br>
