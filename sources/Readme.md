@@ -680,17 +680,7 @@ Codigo em python para uso academico para testar CG - Ax=b esparso (SpMV) Por lin
 <br>
 CG (Conjugate Gradient) distribuído com SpMV esparso, halo exchange e reduções globais
 
-Este material explica — de forma didática e no estilo de “README de GitHub” — como implementar e entender um resolvedor Conjugate Gradient (CG) paralelo para o sistema linear esparso
-
-𝐴
- 
-𝑥
-=
-𝑏
-,
-Ax=b,
-
-onde A é simétrica definida positiva (SPD). No exemplo acadêmico, A vem do Laplaciano 2D com condições de contorno de Dirichlet (u=0 nas bordas), discretizado por stencil de 5 pontos. O foco é mostrar:
+Este material explica — de forma didática e no estilo de “README de GitHub” — como implementar e entender um resolvedor Conjugate Gradient (CG) paralelo para o sistema linear esparso onde A é simétrica definida positiva (SPD). No exemplo acadêmico, A vem do Laplaciano 2D com condições de contorno de Dirichlet (u=0 nas bordas), discretizado por stencil de 5 pontos. O foco é mostrar:
 
 SpMV (produto matriz–vetor) matriceless (sem montar A): usamos diretamente o stencil.
 
@@ -705,146 +695,18 @@ Reduções globais com Allreduce (produtos internos e norma do resíduo).
 1) Problema de referência
 
 Domínio: 
-[
-0
-,
-1
-]
-×
-[
-0
-,
-1
-]
 [0,1]×[0,1], malha uniforme 
-𝑁
-𝑥
-×
-𝑁
-𝑦
-N
-x
-	​
-
-×N
-y
-	​
-
-.
-
 Operador: 
-−
-∇
-2
-𝑢
-=
-𝑓
-−∇
-2
-u=f com 
-𝑢
-=
-0
 u=0 nas bordas.
 
 Discretização 5-pontos em cada célula interior:
 
-(
-𝐴
-𝑢
-)
-𝑖
-,
-𝑗
-  
-=
-  
-4
- 
-𝑢
-𝑖
-,
-𝑗
-−
-(
-𝑢
-𝑖
-−
-1
-,
-𝑗
-+
-𝑢
-𝑖
-+
-1
-,
-𝑗
-+
-𝑢
-𝑖
-,
-𝑗
-−
-1
-+
-𝑢
-𝑖
-,
-𝑗
-+
-1
-)
-(Au)
-i,j
-	​
-
-=4u
-i,j
-	​
-
-−(u
-i−1,j
-	​
-
-+u
-i+1,j
-	​
-
-+u
-i,j−1
-	​
-
-+u
-i,j+1
-	​
-
-)
-
 Observação: frequentemente absorvemos 
-ℎ
-−
-2
-h
-−2
- no lado direito (
-𝑏
-=
-ℎ
-2
-𝑓
-b=h
-2
-f) para simplificar a notação do SpMV.
+ para simplificar a notação do SpMV.
 
 2) Por que SpMV matriceless?
 
-Em malhas regulares, A tem estrutura local (stencil). Montar uma matriz esparsa global é desnecessário e caro. Em vez disso, computamos 
-(
-𝐴
-𝑣
-)
-(Av) no ato, apenas com acessos aos vizinhos de cada nó. Isso reduz memória e melhora cache.
+Em malhas regulares, A tem estrutura local (stencil). Montar uma matriz esparsa global é desnecessário e caro. Em vez disso, computamos (Av) no ato, apenas com acessos aos vizinhos de cada nó. Isso reduz memória e melhora cache.
 
 3) Decomposição por linhas/blocos
 
