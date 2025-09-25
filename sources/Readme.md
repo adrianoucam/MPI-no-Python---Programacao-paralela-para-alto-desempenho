@@ -667,6 +667,14 @@ EP (Embarassingly Parallel): cada rank trabalha 100% independente (gera amostras
 Reduce (root-only): apenas o rank 0 recebe as somas globais.
 
 Allreduce (broadcast do resultado): todos recebem as somas globais.
+<br>
+mpiexec -n 4 python3 ep_monte_carlo.py --samples-per-rank 2000000 --op allreduce
+<br>
+[EP Monte Carlo] P=4 | samples_per_rank=2,000,000 | total=8,000,000 <br>
+Tempo total: 0.154422 s <br>
+  Allreduce -> pi ~= 3.140547000000 | erro=1.046e-03 <br>
+
+  
 
 Determinismo: sementes independentes por rank (seed + rank*1_000_003).
 
