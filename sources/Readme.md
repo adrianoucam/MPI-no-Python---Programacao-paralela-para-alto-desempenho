@@ -455,4 +455,42 @@ mpiexec -n 4  python3 all_to_all.py<br>
 [Entrada]  rank 2: [200, 201, 202, 203]<br>
 [Saida]    rank 2: [2, 102, 202, 302]<br>
 [Sensor 2] min=2  max=302  media=152.00<br>
+<br>
+<br>
+Exemplo Acadêmico: Multigrid (Ciclo-V) 2D para Poisson<br>
+<br>
+Este exemplo resolve a equação de Poisson -∇² u = f em [0,1] × [0,1] com condição de Dirichlet zero (bordas u = 0).
+A implementação usa mpi4py com comunicador cartesiano e faz troca de halos (ghost cells) entre vizinhos a cada etapa de suavização.<br>
+<br>
+O código está bem comentado e inclui um bloco de documentação no topo — pronto para entrar na sua doc.<br>
+
+Resumo didático<br>
+<br>
+Domínio e malha: o domínio [0,1] × [0,1] é discretizado em uma malha uniforme Nx × Ny.<br>
+<br>
+Particionamento paralelo: a malha é particionada em um grid 2D de processos (cartesiano); cada processo resolve seu subdomínio com células de halo.<br>
+<br>
+Ciclo-V (V-cycle):<br>
+<br>
+Pré-suavização (relaxação, p.ex. Jacobi/GS)<br>
+<br>
+Restrição do resíduo para a malha mais grossa<br>
+<br>
+Solução aproximada no nível grosseiro<br>
+<br>
+Prolongamento da correção para a malha fina<br>
+<br>
+Pós-suavização<br>
+<br>
+Comunicação MPI:<br>
+<br>
+Troca de fronteiras (vizinho-a-vizinho) com MPI_Sendrecv (ou MPI_Isend/Irecv + MPI_Wait*)<br>
+<br>
+Reduções globais (norma do resíduo, produtos internos) com MPI_Allreduce<br>
+<br>
+Objetivo pedagógico: mostrar como o Multigrid reduz erro em vários comprimentos de onda e onde o MPI entra (halos entre vizinhos e reduções globais).<br>
+<br>
+mpiexec -n 4 python3 mpi_multigrid_vcycle.py --Nx 128 --Ny 128 --cycles 5
+<br>
+<br>
 
