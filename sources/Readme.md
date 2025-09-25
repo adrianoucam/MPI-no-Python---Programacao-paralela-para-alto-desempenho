@@ -1336,5 +1336,46 @@ Determinismo: sementes independentes por rank (seed + rank*1_000_003).
 
 Escalabilidade: comunicação mínima (somente 2 inteiros por rank no final).
 
-Memória controlada: geração de amostras por chunks.
+Memória controlada: geração de amostras por chunks.<br>
+<br>
+<br>
+<br>
+exemplo acadêmico FT (3D FFT) com mpi4py que implementa duas decomposições:
 
+slab (1D): divide o domínio ao longo de Z; usa Alltoall para transpor e finalizar a FFT no eixo restante.
+
+pencil (2D): divide Z entre linhas de processo (Py) e Y entre colunas (Px); faz duas transposições Alltoall (em row_comm e col_comm) e FFTs 1D locais entre elas.
+
+O código também faz Allreduce para checar norma global e erro de reconstrução.
+
+Requisitos (para simplicidade didática):
+
+Nz % Py == 0, Ny % Px == 0 e, no modo slab, também Ny % P == 0.
+
+Nx % Px == 0.
+
+Py * Px == P (número total de processos).
+
+numpy e mpi4py.
+<br>
+mpiexec -n 4 python3 ft3d_mpi.py --Nx 128 --Ny 128 --Nz 128 --mode slab<br>
+[FT3D] modo=slab  P=4  Py=4 Px=1  N=(128,128,128)<br>
+  Tempo forward : 0.353643 s<br>
+  Tempo inverse : 0.390760 s<br>
+  ||u0||_2=1.448155e+03  ||u_rec||_2=1.448155e+03  (dif=0.000e+00)<br>
+  erro max |u_rec - u0| = 1.295e-15<br>
+<br>
+mpiexec -n 8 python3 ft3d_mpi.py --Nx 128 --Ny 128 --Nz 128 --mode pencil<br>
+[FT3D] modo=pencil  P=8  Py=4 Px=2  N=(128,128,128)<br>
+  Tempo forward : 0.189583 s<br>
+  Tempo inverse : 0.254814 s<br>
+  ||u0||_2=1.448155e+03  ||u_rec||_2=1.448155e+03  (dif=0.000e+00)<br>
+  erro max |u_rec - u0| = 1.450e+00<br>
+<br>
+mpiexec -n 8 python3 ft3d_mpi.py --Nx 128 --Ny 128 --Nz 128 --mode pencil --py 4 --px 2<br>
+[FT3D] modo=pencil  P=8  Py=4 Px=2  N=(128,128,128)<br>
+  Tempo forward : 0.238143 s<br>
+  Tempo inverse : 0.244242 s<br>
+  ||u0||_2=1.448155e+03  ||u_rec||_2=1.448155e+03  (dif=0.000e+00)<br>
+  erro max |u_rec - u0| = 1.450e+00<br>
+<br>
