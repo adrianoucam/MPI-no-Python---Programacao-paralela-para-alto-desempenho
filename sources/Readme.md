@@ -434,5 +434,25 @@ Foram gastos 10.9 segundos<BR>
 Com n = 100000000 trapezoides, a estimativa<BR>
 da integral de 0.000000 atÚ 1.000000 = 1.718281828459<BR>
 
-
+<br>
+ mpi_alltoall_sensores.py<br>
+ Objetivo acadêmico:<br>
+ - Cada processo gera 1 leitura para cada "sensor" (0..size-1) => vetor de tamanho "size".<br>
+ - Usando MPI_Alltoall, o elemento j vai para o processo j.<br>
+ - Assim, o processo j recebe todas as leituras do "sensor j" (uma de cada processo) e calcula a média.<br>
+mpi_comm.Alltoall<br>
+<br>
+mpiexec -n 4  python3 all_to_all.py<br>
+[Entrada]  rank 0: [0, 1, 2, 3]<br>
+[Saida]    rank 0: [0, 100, 200, 300]<br>
+[Sensor 0] min=0  max=300  media=150.00<br>
+[Entrada]  rank 1: [100, 101, 102, 103]<br>
+[Saida]    rank 1: [1, 101, 201, 301]<br>
+[Sensor 1] min=1  max=301  media=151.00<br>
+[Entrada]  rank 3: [300, 301, 302, 303]<br>
+[Saida]    rank 3: [3, 103, 203, 303]<br>
+[Sensor 3] min=3  max=303  media=153.00<br>
+[Entrada]  rank 2: [200, 201, 202, 203]<br>
+[Saida]    rank 2: [2, 102, 202, 302]<br>
+[Sensor 2] min=2  max=302  media=152.00<br>
 
