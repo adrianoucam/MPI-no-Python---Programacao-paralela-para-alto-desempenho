@@ -961,4 +961,26 @@ Rank 1 terminou com valor = 8<br>
 Rank 2 terminou com valor = 13<br>
 <br>
 <br>
-## Usando algoritmo FTCO 
+## Usando algoritmo FTCO  <br>
+<br>
+ mpiexec -n 4 python3 ftco_matmul.py <br>
+ [ROOT] checksum FTCO = 64000000 | esperado = 64000000 <br>
+ [ROOT] tempo de multiplicacao local = 11.435 s<br>
+
+#  apos alteracao : global_checksum = ftco_reduce_sum(local_checksum, faulted_rank=3)<br>
+ mpiexec -n 4 python3 ftco_matmul.py<br>
+ [ROOT] checksum FTCO = 48000000 | esperado = 64000000<br>
+ [ROOT] tempo de multiplicacao local = 11.361 s<br>
+<br>
+<br>
+
+# VERSÃO MELHORADA  <br>
+mpiexec -n 4 python3 ftco_matmul_melhorado.py <br>
+[MASTER] checksum final = 1000000000 | esperado = 1000000000 <br>
+[MASTER] tempo total = 1.338s <br>
+<br>
+E:\bc_niteroi_rj\hpc>mpiexec -n 4 python3 ftco_matmul_melhorado.py <br>
+[MASTER] checksum final = 1000000000 | esperado = 1000000000<br>
+[MASTER] tempo total = 1.225s<br>
+<br>
+<br>
