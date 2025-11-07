@@ -15,7 +15,7 @@ mpiexec -n 4 python3 mpi_pi_criancas.py<br>
 <br>
 Bolinhas distribuidas entre o rank0 e rank1<br>
 <br>
-mpiexec -n 4 python3 mpi_bolinhas.py (mpirun -n 4 python3 mpi_bolinhas.py no linux)<br>
+mpiexec -n 4 python3 mpi_bolinhas.py (mpiexec  -n 4 python3 mpi_bolinhas.py no linux)<br>
 [Rank 3] Estou só observando a troca de bolinhas.<br>
 [Rank 2] Estou só observando a troca de bolinhas.<br>
 [Rank 0] Enviei 10 bolinha(s) para o Rank 1.<br>
@@ -916,3 +916,49 @@ mpiexec -n 8 python3 ft3d_mpi.py --Nx 128 --Ny 128 --Nz 128 --mode pencil --py 4
   ||u0||_2=1.448155e+03  ||u_rec||_2=1.448155e+03  (dif=0.000e+00)<br>
   erro max |u_rec - u0| = 1.450e+00<br>
 <br>
+<br>
+# Multiplicação de matrizes NxN em paralelo com MPI (scatter linhas de A) <br>
+ Execução: <br>
+ mpiexec -n 2 python3  mpi_matmul_ikj.py <br>
+ C[0,0] = 1000 <br>
+ Tempo de multiplicacao (rank 0 mediu): 387.464 s <br>
+   mpiexec -n 4 python mpi_matmul_ikj.py  (altere N no código se quiser) <br>
+ mpiexec -n 4 python3  mpi_matmul_ikj.py <br>
+ C[0,0] = 1000 <br>
+ Tempo de multiplicacao (rank 0 mediu): 270.732 s <br>
+ mpiexec -n 8 python3  mpi_matmul_ikj.py <br>
+ C[0,0] = 1000 <br>
+ Tempo de multiplicacao (rank 0 mediu): 184.815 s <br>
+ Requer: mpi4py instalado e um MPI (ex.: Open MPI) <br>
+<br>
+<br>
+
+## Tolerancia a FALHAS <br>
+# Usando algoritmo FTCO <br>
+# periodico wiley https://onlinelibrary.wiley.com/doi/10.1002/cpe.5826 <br>
+
+# Simulando funcionamento correto em todos os nós OPENMPI 
+mpiexec -n 8 python3    ftco_demo.py 1 <br>
+Rank 0 terminou com valor = 0 <br>
+Rank 2 terminou com valor = 2<br>
+Rank 4 terminou com valor = 4<br>
+Rank 7 terminou com valor = 7<br>
+Rank 5 terminou com valor = 5<br>
+Rank 6 terminou com valor = 6<br>
+Rank 3 terminou com valor = 17<br>
+Rank 1 terminou com valor = 8<br>
+<br>
+<br>
+# Simulando falha em um dos nós OPENMPI 
+mpiexec -n 8 python3    ftco_demo.py 5<br>
+Rank 0 terminou com valor = 0<br>
+Rank 6 terminou com valor = 6<br>
+Rank 5 terminou com valor = 5<br>
+Rank 3 terminou com valor = 10<br>
+Rank 4 terminou com valor = 4<br>
+Rank 7 terminou com valor = 7<br>
+Rank 1 terminou com valor = 8<br>
+Rank 2 terminou com valor = 13<br>
+<br>
+<br>
+## Usando algoritmo FTCO 
