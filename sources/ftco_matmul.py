@@ -12,14 +12,20 @@
 # inspirado em: Tree-based fault-tolerant collective operations for MPI :contentReference[oaicite:1]{index=1}
 
 
-# mpiexec -n 8 python3    ftco_matmul.py
-# [ROOT] checksum FTCO = 8000000 | esperado = 64000000
-# [ROOT] tempo de multiplicacao local = 6.882 s
+# mpiexec -n 4 python3 ftco_matmul.py
+# [ROOT] checksum FTCO = 64000000 | esperado = 64000000
+# [ROOT] tempo de multiplicacao local = 11.435 s
 
+#  apos alteracao : global_checksum = ftco_reduce_sum(local_checksum, faulted_rank=3)
+# mpiexec -n 4 python3 ftco_matmul.py
+# [ROOT] checksum FTCO = 48000000 | esperado = 64000000
+# [ROOT] tempo de multiplicacao local = 11.361 s
+
+# O ALGORITMO EXECUTOU TODAS AS OPERACOES , EXCETO DO RANK 3 
 ##################################################################
 # apos modificar a linha , para sumular o erro 
-#  ERA global_checksum = ftco_sum(local_checksum, faulted_rank=-1)
-#  AGORA global_checksum = ftco_sum(local_checksum, faulted_rank=3)
+#  ERA global_checksum = ftco_reduce_sum(local_checksum, faulted_rank=-1)
+#  AGORA global_checksum = ftco_reduce_sum(local_checksum, faulted_rank=3)
 ### simulando erro no RANK 3
 # mpiexec -n 8 python3    ftco_matmul.py
 # [ROOT] checksum FTCO = 5192001998 | esperado = 64000000
@@ -31,6 +37,17 @@ from mpi4py import MPI
 import numpy as np
 import time
 import sys
+
+
+
+MSG_DATA = 0
+MSG_ACK  = 1
+MSG_STOP = 2
+
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
+
 
 # ----------------------
 # mensagens “FTCO-style”
@@ -46,22 +63,23 @@ size = comm.Get_size()
 
 def build_binary_tree(rank, size):
     parent = -1 if rank == 0 else (rank - 1) // 2
-    kids = []
-    left = 2 * rank + 1
-    right = 2 * rank + 2
-    if left < size:
-        kids.append(left)
-    if right < size:
-        kids.append(right)
-    ups = [] if parent == -1 else [parent]
-    return {"up": ups, "down": kids}
+    children = []
+    l = 2 * rank + 1
+    r = 2 * rank + 2
+    if l < size:
+        children.append(l)
+    if r < size:
+        children.append(r)
+    return parent, children
 
 
-def send_msg(src, mtype, value, dest, tag=0):
-    comm.send({"src": src, "type": mtype, "value": value}, dest=dest, tag=tag)
+def send_msg(src, mtype, value, dest):
+    comm.send({"src": src, "type": mtype, "value": value}, dest=dest)
 
 
-def try_recv_msg(queue):
+
+
+def try_recv(queue):
     status = MPI.Status()
     while comm.Iprobe(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status):
         msg = comm.recv(source=status.Get_source(), tag=status.Get_tag())
@@ -161,8 +179,75 @@ def fault_tolerance_step(my_rank, pending_ack, faulted_rank):
     pending_ack[:] = still
     return acted
 
+def ftco_reduce_sum(local_value, faulted_rank=-1):
+    """
+    Redução em árvore tolerante a falhas:
+    - cada processo espera o valor de TODOS os filhos (cada filho conta uma vez)
+    - só então manda UM valor pro pai
+    - o root manda STOP no final
+    """
+    parent, children = build_binary_tree(rank, size)
 
-def ftco_sum(local_value, faulted_rank=-1):
+    # quem ainda não entregou o valor desta redução
+    waiting_children = set(children)
+    # para evitar somar 2x o mesmo filho
+    received_from = set()
+
+    acc = local_value
+    waiting_ack_from_parent = (parent != -1)
+    done = False
+
+    while not done:
+        # recebe tudo que chegou
+        status = MPI.Status()
+        while comm.Iprobe(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status):
+            msg = comm.recv(source=status.Get_source(), tag=status.Get_tag())
+            mtype = msg["type"]
+            src   = msg["src"]
+            val   = msg["value"]
+
+            if mtype == MSG_DATA:
+                # só soma se ainda não somamos desse filho
+                if src not in received_from:
+                    acc += val
+                    received_from.add(src)
+                    if src in waiting_children:
+                        waiting_children.remove(src)
+                # de qualquer forma manda ACK
+                send_msg(rank, MSG_ACK, 0, dest=src)
+
+            elif mtype == MSG_ACK:
+                # pai confirmou; podemos parar de esperar
+                if src == parent:
+                    waiting_ack_from_parent = False
+
+            elif mtype == MSG_STOP:
+                done = True
+
+        # tolerância simples: se um filho falhou, paramos de esperar por ele
+        if faulted_rank in waiting_children:
+            waiting_children.remove(faulted_rank)
+
+        # se não sou root e já recebi de todos os filhos e ainda não mandei pro pai:
+        if parent != -1 and not waiting_children and waiting_ack_from_parent:
+            send_msg(rank, MSG_DATA, acc, dest=parent)
+            # agora esperamos o ACK
+
+        # se sou root: quando não tiver mais filhos pra esperar e não houver mensagens pendentes, termino
+        if rank == 0 and not waiting_children:
+            # root conhece o valor final
+            # manda STOP pra todo mundo
+            for p in range(1, size):
+                send_msg(0, MSG_STOP, 0, dest=p)
+            done = True
+
+        time.sleep(0.001)
+
+    return acc
+
+
+
+def ftco_reduce_sum2(local_value, faulted_rank=-1):
     """
     faz uma única “coletiva” FT para somar local_value de todos
     e devolver o resultado no root (0). root manda STOP no fim.
@@ -247,13 +332,14 @@ def main():
 
     # agora usamos a COLETIVA FT em árvore para somar todos os checksums
     # se quiser simular falha do rank 3, passe faulted_rank=3
-    global_checksum = ftco_sum(local_checksum, faulted_rank=3)
+    global_checksum = ftco_reduce_sum(local_checksum, faulted_rank=3)
 
     if rank == 0:
-        # para A=1 e B=1, cada linha de C tem N, então
-        # total esperado = N * N * N
         esperado = N * N * N
         print(f"[ROOT] checksum FTCO = {global_checksum} | esperado = {esperado}")
+        # para A=1 e B=1, cada linha de C tem N, então
+        # total esperado = N * N * N      
+       
         print(f"[ROOT] tempo de multiplicacao local = {t1 - t0:0.3f} s")
 
     comm.Barrier()
