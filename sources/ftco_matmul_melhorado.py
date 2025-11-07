@@ -104,7 +104,7 @@ def master(N=1000, block_rows=50, timeout=2.0):
     print(f"[MASTER] tempo total = {t1 - t0:0.3f}s")
 
 
-def worker():
+def workerold():
     B = comm.bcast(None, root=0)
 
     while True:
@@ -119,7 +119,7 @@ def worker():
 
         # --------- SIMULAÇÃO DE FALHA AQUI ----------
         # rank 3 recebe o bloco 0 e nunca responde
-        if rank == 3 and blk_id == 0:
+        if rank == 3 : # and blk_id == 0:
             print(f"[WORKER {rank}] simulando falha no bloco {blk_id} (vou travar)", flush=True)
             # “caiu”: nunca devolve o resultado
             time.sleep(9999)
@@ -130,6 +130,38 @@ def worker():
         checksum = int(np.sum(Cblk))
         comm.send((blk_id, checksum), dest=0, tag=TAG_RESULT)
 
+
+def worker():
+    B = comm.bcast(None, root=0)
+
+    while True:
+        status = MPI.Status()
+        comm.probe(source=0, tag=MPI.ANY_TAG, status=status)
+        tag = status.Get_tag()
+
+        if tag == TAG_STOP:
+            comm.recv(source=0, tag=TAG_STOP)
+            break
+
+        blk_id, rs, re, Ablk = comm.recv(source=0, tag=TAG_WORK)
+
+        # --------- SIMULAÇÃO DE FALHA CONTROLADA ----------
+        if rank == 3 : # and blk_id == 0:
+            print(f"[WORKER {rank}] simulando falha no bloco {blk_id} (vou ficar lento)", flush=True)
+            # em vez de dormir 9999s, dorme em pedaços e verifica STOP
+            while True:
+                # vê se o mestre já pediu pra parar
+                if comm.Iprobe(source=0, tag=TAG_STOP):
+                    comm.recv(source=0, tag=TAG_STOP)
+                    return
+                time.sleep(0.5)   # continua “travado/lento”
+            # (não chega aqui)
+        # --------------------------------------------------
+
+        # trabalho normal
+        Cblk = Ablk.dot(B)
+        checksum = int(np.sum(Cblk))
+        comm.send((blk_id, checksum), dest=0, tag=TAG_RESULT)
 
 def main():
     if size < 2:
